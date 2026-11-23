@@ -1,0 +1,81 @@
+<header class="site-head">
+  <h1 class="site-title">
+    <a href="./" (click)="goHome($event)">
+      <svg class="site-mark" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" />
+        <circle cx="16" cy="16" r="8.5" />
+      </svg>
+      Simulador de autómatas finitos
+    </a>
+  </h1>
+  <nav aria-label="Módulos">
+    <div class="tabs" role="tablist">
+      @for (tab of tabs; track tab.id; let i = $index) {
+        <button
+          type="button"
+          role="tab"
+          class="tab"
+          [id]="'tab-' + tab.id"
+          [attr.aria-selected]="store.module() === tab.id"
+          [attr.aria-controls]="'panel-' + tab.id"
+          [attr.tabindex]="store.module() === tab.id ? 0 : -1"
+          (click)="select(tab.id)"
+          (keydown)="onTabKey($event, i)"
+        >
+          @switch (tab.id) {
+            @case ('build') {
+              <svg lucideHammer></svg>
+            }
+            @case ('words') {
+              <svg lucideListOrdered></svg>
+            }
+            @case ('test') {
+              <svg lucidePlay></svg>
+            }
+          }
+          {{ tab.label }}
+        </button>
+      }
+    </div>
+  </nav>
+  <div class="head-tools">
+    <app-guide-dialog />
+    <app-theme-switch />
+  </div>
+</header>
+
+<section class="tuple-band" aria-label="El autómata como 5-tupla">
+  <app-tuple-strip />
+</section>
+
+<main class="layout">
+  <div
+    class="module"
+    role="tabpanel"
+    [id]="'panel-' + store.module()"
+    [attr.aria-labelledby]="'tab-' + store.module()"
+  >
+    @switch (store.module()) {
+      @case ('build') {
+        <app-build-module />
+      }
+      @case ('words') {
+        <app-words-module />
+      }
+      @case ('test') {
+        <app-test-module />
+      }
+    }
+  </div>
+
+  <aside class="panel" aria-label="Gráfica y tabla del autómata">
+    <app-automaton-panel />
+  </aside>
+</main>
+
+<footer class="site-foot">
+  <p>
+    Proyecto final de Estructuras Discretas. Autómatas finitos deterministas y completos,
+    M = (Q, Σ, δ, q0, F). La gráfica se dibuja con Graphviz en el navegador.
+  </p>
+</footer>

@@ -1,0 +1,259 @@
+<header class="module-head">
+  <h2>Construir el autómata</h2>
+  <p class="lede">
+    Escriba los cinco elementos en orden. Construir otra vez reemplaza el autómata que esté en
+    memoria.
+  </p>
+</header>
+
+<form class="steps" novalidate (submit)="build($event)">
+  <datalist id="state-options">
+    @for (q of states().items; track $index) {
+      <option [value]="q"></option>
+    }
+  </datalist>
+
+  <div class="step">
+    <span class="step-glyph" aria-hidden="true">Q</span>
+    <div class="step-body">
+      <label class="step-label" for="f-states">Estados</label>
+      <p class="hint" id="h-states">Separados por comas, por ejemplo s0, s1, s2.</p>
+      <input
+        id="f-states"
+        class="code-input"
+        autocomplete="off"
+        spellcheck="false"
+        [value]="draft().states"
+        (input)="setText('states', $event)"
+        (focus)="focus('Q')"
+        (blur)="focus(null)"
+        [attr.aria-invalid]="errors().states ? 'true' : null"
+        [attr.aria-describedby]="errors().states ? 'h-states e-states' : 'h-states'"
+      />
+      @if (errors().states) {
+        <p class="field-error" id="e-states"><svg lucideCircleAlert></svg>{{ errors().states }}</p>
+      }
+    </div>
+  </div>
+
+  <div class="step">
+    <span class="step-glyph" aria-hidden="true">Σ</span>
+    <div class="step-body">
+      <label class="step-label" for="f-alphabet">Alfabeto</label>
+      <p class="hint" id="h-alphabet">Símbolos de un solo carácter, separados por comas: a, b.</p>
+      <input
+        id="f-alphabet"
+        class="code-input"
+        autocomplete="off"
+        spellcheck="false"
+        [value]="draft().alphabet"
+        (input)="setText('alphabet', $event)"
+        (focus)="focus('Σ')"
+        (blur)="focus(null)"
+        [attr.aria-invalid]="errors().alphabet ? 'true' : null"
+        [attr.aria-describedby]="errors().alphabet ? 'h-alphabet e-alphabet' : 'h-alphabet'"
+      />
+      @if (errors().alphabet) {
+        <p class="field-error" id="e-alphabet"><svg lucideCircleAlert></svg>{{ errors().alphabet }}</p>
+      }
+    </div>
+  </div>
+
+  <div class="step">
+    <span class="step-glyph" aria-hidden="true">δ</span>
+    <fieldset class="step-body" [disabled]="!gridReady()">
+      <legend class="step-label">Función de transición</legend>
+      @if (gridReady()) {
+        <p class="hint">Para cada estado y cada símbolo, el estado al que se pasa.</p>
+        <div class="grid-scroll">
+          <table class="delta-grid">
+            <thead>
+              <tr>
+                <th scope="col">δ</th>
+                @for (a of alphabet().items; track $index) {
+                  <th scope="col">{{ a }}</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (q of states().items; track $index) {
+                <tr>
+                  <th scope="row">{{ q }}</th>
+                  @for (a of alphabet().items; track $index) {
+                    <td>
+                      <input
+                        class="code-input cell-input"
+                        list="state-options"
+                        autocomplete="off"
+                        spellcheck="false"
+                        [id]="cellId(q, a)"
+                        [attr.aria-label]="'δ(' + q + ', ' + a + ')'"
+                        [value]="cell(q, a)"
+                        (input)="setCell(q, a, $event)"
+                        (focus)="focus('δ')"
+                        (blur)="focus(null)"
+                        [attr.aria-invalid]="errors().delta?.[q]?.[a] ? 'true' : null"
+                      />
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        @for (e of deltaErrors(); track e.id) {
+          <p class="field-error">
+            <svg lucideCircleAlert></svg><label [for]="e.id">{{ e.label }}</label>: {{ e.message }}
+          </p>
+        }
+        @if (canComplete()) {
+          <div class="sink-action">
+            <button type="button" class="button-text" (click)="completeSink()">
+              <svg lucidePlus></svg>Completar con pozo
+            </button>
+            <p class="hint">Las casillas vacías pasan a un estado no final que vuelve a sí mismo.</p>
+          </div>
+        }
+        <p class="hint sink-note" role="status">{{ sinkNote() }}</p>
+      } @else {
+        <p class="hint">La tabla aparece cuando Q y Σ estén bien escritos.</p>
+      }
+    </fieldset>
+  </div>
+
+  <div class="step">
+    <span class="step-glyph" aria-hidden="true">q<sub>0</sub></span>
+    <div class="step-body">
+      <label class="step-label" for="f-initial">Estado inicial</label>
+      <input
+        id="f-initial"
+        class="code-input input-short"
+        list="state-options"
+        autocomplete="off"
+        spellcheck="false"
+        [value]="draft().initial"
+        (input)="setText('initial', $event)"
+        (focus)="focus('q0')"
+        (blur)="focus(null)"
+        [attr.aria-invalid]="errors().initial ? 'true' : null"
+        [attr.aria-describedby]="errors().initial ? 'e-initial' : null"
+      />
+      @if (errors().initial) {
+        <p class="field-error" id="e-initial"><svg lucideCircleAlert></svg>{{ errors().initial }}</p>
+      }
+    </div>
+  </div>
+
+  <div class="step">
+    <span class="step-glyph" aria-hidden="true">F</span>
+    <div class="step-body">
+      <label class="step-label" for="f-finals">Estados finales</label>
+      <p class="hint" id="h-finals">Cero o más estados de Q, separados por comas.</p>
+      <input
+        id="f-finals"
+        class="code-input"
+        autocomplete="off"
+        spellcheck="false"
+        [value]="draft().finals"
+        (input)="setText('finals', $event)"
+        (focus)="focus('F')"
+        (blur)="focus(null)"
+        [attr.aria-invalid]="errors().finals ? 'true' : null"
+        [attr.aria-describedby]="errors().finals ? 'h-finals e-finals' : 'h-finals'"
+      />
+      @if (errors().finals) {
+        <p class="field-error" id="e-finals"><svg lucideCircleAlert></svg>{{ errors().finals }}</p>
+      }
+    </div>
+  </div>
+
+  <div class="actions">
+    <button type="submit" class="button-primary">
+      <svg lucideHammer></svg>Construir el autómata
+    </button>
+    @if (canClear()) {
+      <button type="button" class="button-secondary" (click)="clear()">
+        <svg lucideEraser></svg>Limpiar campos
+      </button>
+    }
+  </div>
+
+  <div class="status" role="status">
+    @if (status()) {
+      <p class="status-line"><svg lucideCircleCheck></svg>{{ status() }}</p>
+      @if (warning()) {
+        <p class="status-warning"><svg lucideTriangleAlert></svg>{{ warning() }}</p>
+      }
+      <p class="status-next">
+        <button type="button" class="button-text" (click)="go('words')">
+          Ver cinco palabras<svg lucideArrowRight></svg>
+        </button>
+        <button type="button" class="button-text" (click)="go('test')">
+          Probar una palabra<svg lucideArrowRight></svg>
+        </button>
+      </p>
+    }
+  </div>
+</form>
+
+<section class="saved" aria-labelledby="saved-title">
+  <div class="saved-head">
+    <h3 id="saved-title" tabindex="-1">Guardados en este navegador</h3>
+    <button type="button" class="button-text" (click)="fileInput.click()">
+      <svg lucideUpload></svg>Cargar desde archivo
+    </button>
+    <input
+      #fileInput
+      type="file"
+      accept=".json,application/json"
+      hidden
+      (change)="importFile($event)"
+    />
+  </div>
+  @if (fileError()) {
+    <p class="field-error" role="alert"><svg lucideCircleAlert></svg>{{ fileError() }}</p>
+  }
+  <p class="visually-hidden" role="status">{{ savedNote() }}</p>
+  @if (savedItems().length) {
+    <ul class="saved-list">
+      @for (item of savedItems(); track item.entry.savedAt) {
+        <li class="saved-item">
+          <button type="button" class="saved-load" (click)="loadSaved(item.entry)">
+            <span class="visually-hidden">Cargar </span>
+            <span class="saved-tuple">{{ item.tuple }}</span>
+            <span class="saved-date">{{ item.date }}</span>
+          </button>
+          <button
+            type="button"
+            class="saved-remove"
+            title="Quitar de los guardados"
+            [attr.aria-label]="'Quitar ' + item.tuple + ' de los guardados'"
+            (click)="removeSaved(item)"
+          >
+            <svg lucideTrash2></svg>
+          </button>
+        </li>
+      }
+    </ul>
+  } @else {
+    <p class="hint">Cada autómata que construya con el formulario aparecerá aquí.</p>
+  }
+</section>
+
+<section class="examples" aria-labelledby="examples-title">
+  <h3 id="examples-title">Autómatas de prueba</h3>
+  <p class="hint">Llenan el formulario y construyen el autómata.</p>
+  @for (group of exampleGroups; track group.title) {
+    <h4 class="example-group">{{ group.title }}</h4>
+    <ul class="example-list">
+      @for (example of group.examples; track example.key) {
+        <li>
+          <button type="button" class="example-button" (click)="load(example)">
+            <span class="example-key">{{ example.key }}</span>
+            <span>{{ example.description }}</span>
+          </button>
+        </li>
+      }
+    </ul>
+  }
+</section>

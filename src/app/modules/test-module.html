@@ -1,0 +1,101 @@
+<header class="module-head">
+  <h2>Probar una palabra</h2>
+  <p class="lede">
+    El autómata lee la palabra símbolo por símbolo desde el estado inicial y la reconoce si
+    termina en un estado final.
+  </p>
+</header>
+
+@if (store.automaton(); as m) {
+  <form class="word-form" novalidate (submit)="test($event)">
+    <label class="step-label" for="f-word">Palabra</label>
+    <div class="word-form-row">
+      <input
+        id="f-word"
+        class="code-input"
+        autocomplete="off"
+        spellcheck="false"
+        aria-describedby="h-word"
+        [value]="word()"
+        (input)="setWord($event)"
+      />
+      <button type="submit" class="button-primary"><svg lucidePlay></svg>Probar</button>
+    </div>
+    <p class="hint" id="h-word">Deje el campo vacío para probar la palabra vacía ε.</p>
+  </form>
+
+  @if (result(); as r) {
+    <section class="result" aria-labelledby="result-title">
+      <h3 id="result-title" class="visually-hidden">Resultado</h3>
+
+      @if (r.run.invalidSymbol === undefined) {
+        <ol class="tape" aria-label="Recorrido paso a paso">
+          @for (q of r.run.states; track $index; let i = $index) {
+            @if (i > 0) {
+              <li class="tape-symbol" [class.is-read]="i <= step()" aria-hidden="true">{{ r.symbols[i - 1] }}</li>
+            }
+            <li
+              class="tape-state"
+              [class.is-read]="i <= step()"
+              [class.is-current]="i === step()"
+              [class.is-final]="m.finals.has(q)"
+            >
+              {{ q }}
+            </li>
+          }
+        </ol>
+        <p class="run-line">Recorrido: {{ formatRun(r) }}</p>
+      }
+
+      <div class="verdict" role="status">
+        @if (!playing()) {
+          <svg class="verdict-mark" viewBox="0 0 40 40" aria-hidden="true">
+            <circle cx="20" cy="20" r="17" />
+            @if (r.accepted) {
+              <circle cx="20" cy="20" r="12" />
+            }
+          </svg>
+          <div>
+            @if (r.run.invalidSymbol === undefined) {
+              <p class="verdict-detail">
+                Estado final: {{ r.run.states[r.run.states.length - 1] }}, que
+                {{ r.accepted ? 'es' : 'no es' }} un estado final.
+              </p>
+            }
+            <p class="verdict-text">{{ r.verdict }}</p>
+          </div>
+        }
+      </div>
+
+      @if (r.symbols.length > 0 && r.run.invalidSymbol === undefined) {
+        <button type="button" class="button-text" (click)="replay()" [disabled]="playing()">
+          <svg lucideRotateCcw></svg>Repetir el recorrido
+        </button>
+      }
+    </section>
+  }
+
+  @if (store.tested().length > 1) {
+    <section class="history" aria-labelledby="history-title">
+      <h3 id="history-title">Palabras probadas</h3>
+      <ul class="history-list">
+        @for (t of store.tested(); track t.word) {
+          <li>
+            <button type="button" class="history-button" (click)="retest(t.word)">
+              <span class="word">{{ showWord(t.word) }}</span>
+              <span class="history-verdict">
+                @if (t.accepted) {
+                  <svg lucideCheck></svg>Reconocida
+                } @else {
+                  <svg lucideX></svg>No reconocida
+                }
+              </span>
+            </button>
+          </li>
+        }
+      </ul>
+    </section>
+  }
+} @else {
+  <app-needs-automaton />
+}
