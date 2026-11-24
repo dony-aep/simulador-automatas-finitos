@@ -2,7 +2,7 @@
 
 Aplicación web para construir autómatas finitos deterministas y completos, ver su gráfica, conocer las cinco palabras más cortas que reconocen y probar cualquier palabra. Es el proyecto final de Estructuras Discretas y un port de nuestro simulador de consola en Python: conserva su lógica y sus mensajes, y lleva el autómata a una interfaz donde se ve y se recorre en pantalla.
 
-El código está en <https://github.com/dony-aep/simulador-automatas-finitos>.
+Pruébela en <https://simulador-automatas-finitos.vercel.app>, sin instalar nada. El código está en <https://github.com/dony-aep/simulador-automatas-finitos>.
 
 ## Integrantes
 
