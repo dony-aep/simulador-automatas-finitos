@@ -2,10 +2,12 @@
 
 Aplicación web para construir autómatas finitos deterministas y completos, ver su gráfica, conocer las cinco palabras más cortas que reconocen y probar cualquier palabra. Es el proyecto final de Estructuras Discretas y un port de nuestro simulador de consola en Python: conserva su lógica y sus mensajes, y lleva el autómata a una interfaz donde se ve y se recorre en pantalla.
 
+El código está en <https://github.com/dony-aep/simulador-automatas-finitos>.
+
 ## Integrantes
 
-- Doney (grupo 6A)
-- Sebas (grupo 6A)
+- Doney Peña (grupo 6A)
+- Sebastian Barreto (grupo 6A)
 
 ## Qué mejora el port
 
@@ -123,6 +125,6 @@ Los archivos están en `src/app`.
 - Patrón de pestañas accesibles: <https://www.w3.org/WAI/ARIA/apg/patterns/tabs/>
 - Iconos de Lucide: <https://lucide.dev/>
 
-## Uso de inteligencia artificial
+## Uso de LLMs
 
-Claude (Anthropic) hizo el port a TypeScript y Angular desde la versión en Python, incluida la lógica central de `logic.ts`: la validación de los cinco elementos, el recorrido de palabras, la búsqueda en orden canónico y el cálculo de estados alcanzables. Esa lógica partió de la versión en Python que implementó Codex (OpenAI) y que Claude revisó. Claude también hizo el diseño de la página, los autómatas guardados, el archivo JSON, el estado pozo, las descargas, los números de paso, la gramática regular, la guía de símbolos, las pruebas en Vitest y este README. Los ejemplos E1 a E4 salieron de ideas propuestas con ayuda de Claude.
+Claude (Anthropic) hizo la implementación web: pasó a TypeScript y Angular el simulador de consola en Python, con su lógica, y escribió la interfaz, las funciones nuevas, las pruebas en Vitest y este README.
